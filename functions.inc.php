@@ -136,14 +136,16 @@ function ivr_get_config($engine) {
 								$ext->add($c, 's', '', new ext_gotoif('$["${NODEFOUND}" = "0"]','beforewhile:nodedial'));
 							}
 						}else {
-							$ext->add($c, 's', '', new ext_playback('calling'));
-							$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS}${IVREXT},1)}" = "0"]','beforewhile:nodedial'));
+							$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS}${IVREXT},1)}" = "1"]', 'skiperror'))
+								$ext->add($c, 's', '', new ext_playback('record_error'));
+							$ext->add($c, 's', 'skiperror', new ext_playback('calling'));
+
 						}
 										$ext->add($c, 's', '', new ext_endwhile(''));
 										$ext->add($c, 's', '', new ext_answer());
 										$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS},1)}" = "0"]', 'i,1'));
 										$ext->add($c, 's', '', new ext_playback('calling'));
-						$ext->add($c, 's', 'nodedial', new ext_goto('${DIGITS}${IVREXT},1'));
+						$ext->add($c, 's', 'nodedial', new ext_playback('calling'));  new ext_goto('${DIGITS}${IVREXT},1'));
 
 					
 					break;
