@@ -138,10 +138,13 @@ function ivr_get_config($engine) {
 						}else {
 							$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS}${IVREXT},1)}" = "0"]','beforewhile:nodedial'));
 						}
-						$ext->add($c, 's', '', new ext_endwhile(''));
-						$ext->add($c, 's', '', new ext_playback('calling'));
-						$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS},1)}" = "0"]','i,1'));
-						$ext->add($c, 's', 'nodedial', new ext_goto('${DIGITS}${IVREXT},1'));
+										$ext->add($c, 's', '', new ext_endwhile(''));
+										$ext->add($c, 's', '', new ext_answer());
+										$ext->add($c, 's', '', new ext_playback('calling'));
+										$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS},1)}" = "0"]', 'i,1'));
+										$ext->add($c, 's', 'nodedial', new ext_goto('${DIGITS}${IVREXT},1'));
+
+					
 					break;
 					case "1": //force strict dial timeout :: yes
 						$ext->add($c, 's', 'start', new ext_digittimeout($ivr['timeout_time']));
