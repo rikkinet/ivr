@@ -140,9 +140,9 @@ function ivr_get_config($engine) {
 						}
 										$ext->add($c, 's', '', new ext_endwhile(''));
 										$ext->add($c, 's', '', new ext_answer());
-										$ext->add($c, 't', $label, new ext_playback('calling'));
 										$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${DIGITS},1)}" = "0"]', 'i,1'));
-										$ext->add($c, 's', 'nodedial', new ext_goto('${DIGITS}${IVREXT},1'));
+										$ext->add($c, 's', '', new ext_playback('calling'));
+						$ext->add($c, 's', 'nodedial', new ext_goto('${DIGITS}${IVREXT},1'));
 
 					
 					break;
@@ -153,6 +153,7 @@ function ivr_get_config($engine) {
 						$ext->add($c, 's', '', new ext_gotoif('$["${READSTATUS}" = "TIMEOUT" & "${IVREXT}" = ""]','t,1'));
 						if ($ivr['directdial']) {
 							if ($ivr['directdial'] == 'ext-local') {
+								$ext->add($c, 's', '', new ext_playback('calling'));
 								$ext->add($c, 's', '', new ext_execif('$["${DB(DEVICE/${IVREXT}/user)}" != ""]', 'Set', 'LOCALEXT=1'));
 								$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${IVREXT},1)}" = "0" & "${DIALPLAN_EXISTS(from-did-direct-ivr,${IVREXT},1)}" = "0"]','i,1'));
 							} else {
@@ -164,6 +165,7 @@ function ivr_get_config($engine) {
 							$ext->add($c, 's', '', new ext_playback('calling'));
 							$ext->add($c, 's', '', new ext_gotoif('$["${DIALPLAN_EXISTS(${CONTEXT},${IVREXT},1)}" = "0"]','i,1'));
 						}
+						$ext->add($c, 's', '', new ext_playback('calling'));
 						$ext->add($c, 's', '', new ext_gotoif('$["${LOCALEXT}" = "1"]','from-did-direct-ivr,${IVREXT},1'));
 						$ext->add($c, 's', '', new ext_goto('${IVREXT},1'));
 					break;
