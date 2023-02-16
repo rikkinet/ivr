@@ -150,11 +150,17 @@ $ext->add($c, 's', 'nodedial',  new ext_goto('${DIGITS}${IVREXT},1'));
 
 					
 					break;
-					case "1": //force strict dial timeout :: yes
-						$ext->add($c, 's', 'start', new ext_digittimeout($ivr['timeout_time']));
-						$ext->add($c, 's', '', new ext_read('IVREXT', '${IVR_MSG}', '', '', '0', $ivr['timeout_time']));
-                    	$ext->add($c, 's', '', new ext_gotoif('$["${READSTATUS}" = "OK" & "${IVREXT}" = ""]','#,1'));
-						$ext->add($c, 's', '', new ext_gotoif('$["${READSTATUS}" = "TIMEOUT" & "${IVREXT}" = ""]','t,1'));
+					case "1": 
+        // Force strict dial timeout - yes
+        $ext->add($c, 's', 'start', new ext_digittimeout($ivr['timeout_time']));
+        $ext->add($c, 's', '', new ext_read('IVREXT', '${IVR_MSG}', '', '', '0', $ivr['timeout_time']));
+        $ext->add($c, 's', '', new ext_gotoif('$["${READSTATUS}" = "OK"]', 'success', 'timeout'));
+        $ext->add($c, 's', 'timeout', new ext_setvar('IVR_RET', '-1'));
+        $ext->add($c, 's', 'hangup', new ext_hangup());
+        $ext->add($c, 's', 'success', new ext_noop());
+        break;
+    
+}
 						if ($ivr['directdial']) {
 							if ($ivr['directdial'] == 'ext-local') {
 								$ext->add($c, 's', '', new ext_playback('calling'));
@@ -173,14 +179,18 @@ $ext->add($c, 's', 'nodedial',  new ext_goto('${DIGITS}${IVREXT},1'));
 						$ext->add($c, 's', '', new ext_gotoif('$["${LOCALEXT}" = "1"]','from-did-direct-ivr,${IVREXT},1'));
 						$ext->add($c, 's', '', new ext_goto('${IVREXT},1'));
 					break;
-					case "2": //force strict dial timeout :: instant
-						if ($ivr['directdial'] != "" && $ivr['directdial'] == "ext-local" ) {
-							$ext->addInclude($c, 'from-did-direct-ivr'); //generated in core module
-						}
-						$ext->add($c, 's', 'start', new ext_digittimeout(3));
-						$ext->add($c, 's', '', new ext_execif('$["${IVR_MSG}" != ""]','Background','${IVR_MSG}'));
-						$ext->add($c, 's', '', new ext_waitexten($ivr['timeout_time']));
-					break;
+					case "2": 
+        // Force strict dial timeout - no
+        $ext->add($c, 's', 'start', new ext_digittimeout($ivr['timeout_time']));
+        $ext->add($c, 's', '', new ext_read('IVREXT', '${IVR_MSG}', '', '', '0', $ivr['timeout_time']));
+        $ext->add($c, 's', '', new ext_gotoif('$["${READSTATUS}" = "OK"]', 'success', 'failure'));
+        $ext->add($c, 's', 'failure', new ext_gotoif('$["${IVR_EXT}" = ""]', 'hangup', 'retry'));
+        $ext->add($c, 's', 'retry', new ext_gotoif('$["${IVR_RETRY}" = "1"]', 'hangup', 'start'));
+        $ext->add($c, 's', 'hangup', new ext_setvar('IVR_RET', '-1'));
+        $ext->add($c, 's', 'hangup', new ext_hangup());
+        $ext->add($c, 's', 'success', new ext_noop());
+        break;
+  
 				}
 
 				// Actually add the IVR entires now
